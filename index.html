@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TorasubieTracking</title>
+    <base target="_top">
+    <!-- tabler template -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css">
+    <!-- fonts api -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mali">
+    <!-- jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <!-- swal 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      body {
+        font-family: 'Mali';
+      }
+
+      .spinner-border {
+        animation-duration: 0.5s;
+      }
+
+      .mr-gap {
+        margin-right: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-3"></div>
+
+        <div class="col-6">
+          <div class="card" style="margin-bottom: 25px;">
+            <center style="margin-bottom: 25px;"><h1>ค้นหาเลข Tracking (Flash Express)</h1></center>
+
+            <div class="row">
+              <div class="col align-self-center">
+                
+                <div class="row g-2" style="margin: 0px 10px 15px 10px;">
+                  <div class="col">
+                    <input type="text" id="accountName" class="form-control form-control-rounded" placeholder="ชื่อ account twitter ไม่ต้องใส่ @ เช่น Torasubie">
+                  </div>
+                  <div class="col-auto">
+                    <button class="btn btn-icon btn-primary w-100" aria-label="Button" id="searchAccountName" onclick="searchAccountName()" disabled>
+                      <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <!-- table -->
+          <div id="table"></div>
+        </div>
+
+        <div class="col-3"></div>
+      </div>
+    </div>
+  </body>
+  
+</html>
+
+<script>
+ var lastFourDigitTel = ''
+ var searchResult = ''
+ var html = ''
+
+  $("#accountName").keyup(event => {
+    if($("#accountName").val() != "") {
+      $("#searchAccountName").prop('disabled', false);
+      if (event.which === 13) {
+        event.preventDefault()
+        searchAccountName()
+      }
+    } else {
+      $("#searchAccountName").prop('disabled', true);
+    }
+  });
+
+  function copyTracking(trackingNumber, idButton) {
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(trackingNumber);
+    $("#"+idButton).html('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M5 12l5 5l10 -10"></path></svg>');
+    setTimeout(() => {
+      toSameStateCopyIcon(idButton)
+    }, 1500);
+  }
+
+  function toSameStateCopyIcon(idButton) {
+      $("#"+idButton).html('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"></path><path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"></path></svg>');
+  }
+
+  function drawTable() {
+    $('#table').empty()
+    html += '<div class="card">'
+    html += '<div class="table-responsive">'
+    html += '<table class="table table-vcenter card-table">'
+    html += '<thead>'
+    html += '<tr>'
+    html += '<th>Twitter Account</th>'
+    html += '<th>Tracking</th>'
+    html += '<th class="w-auto"></th>'
+    html += '</tr>'
+    html += '</thead>'
+    html += '<tbody>'
+
+    searchResult.forEach((value, index) => {
+      let trackingNumberFunction = "'" + value.trackingNum + "'"
+      let idButton = "'copy-" + index + "'"
+      html += '<tr>'
+      html += '<td>'
+      html += value.account
+      html += '</td>'
+      html += '<td>'
+      html += value.trackingNum
+      html += '</td>'
+      html += '<td class="text-center">'
+      html += '<button class="btn btn-icon btn-outline-primary mr-gap" aria-label="Button" id="copy-'+ index +'" onclick="copyTracking(' + trackingNumberFunction + ',' + idButton + ')"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copy" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1 -2 -2z"></path><path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"></path></svg></button>'
+      html += '<a href="https://www.flashexpress.co.th/fle/tracking?se=' + value.trackingNum + '" target="_blank" class="btn btn-icon btn-outline-dark mr-gap"><svg xmlns="http://wwww3.org/2000/svg" class="icon icon-tabler icon-tabler-external-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"></path><path d="M11 13l9 -9"></path><path d="M15 4h5v5"></path></svg></a>'
+      html += '</td>'
+      html += '</tr>'
+    });
+
+    html += '</tbody>'
+    html += '</table>'
+    html += '</div>'
+    $("#table").append(html)  
+  }
+
+  async function confirmAccountSwal() {
+    const { value: toConfirmTel } = await Swal.fire({
+      title: 'กรุณากรอกเลข 4 ตัวท้ายของเบอร์โทรศัพท์',
+      allowOutsideClick: false,
+      showCloseButton: true,
+      confirmButtonText: 'ยืนยัน',
+      width: '45em',
+      input: 'text',
+      inputLabel: 'เลข 4 ตัวท้ายของเบอร์โทรศัพท์ เพื่อยืนยันว่าเป็นของคุณ account จริง',
+      inputPlaceholder: 'เลข 4 ตัวท้ายของเบอร์โทรศัพท์ที่ให้ไว้'
+    })
+
+    // console.log(toConfirmTel)
+    if(toConfirmTel !== undefined) {
+      if(toConfirmTel == lastFourDigitTel) {
+        drawTable()
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: 'กรอกเลขท้าย 4 ตัวของเบอร์โทรศัพท์ไม่ถูกต้อง',
+          showCloseButton: true,
+          showConfirmButton: false,
+          timer: 3000
+        })
+      }
+    }
+  }
+
+  function searchAccountName() {
+    html = ''
+    if($("#accountName").val() != '') {
+      $('#table').empty()
+      let htmlLoader = '<div class="spinner-border text-dark" role="status"><span class="sr-only"></span></div>'
+      $("#table").append(htmlLoader)
+      let searchText = '@' + $('#accountName').val()
+      google.script.run.withFailureHandler(function(err){
+        console.error("error occured", err)
+        $('#table').empty()
+        html += '<b>พบข้อผิดพลาด โปรดลองใหม่อีกครั้ง</b>'
+        $("#table").append(html)
+      }).withSuccessHandler(function(res){
+        console.log("success!")
+        searchResult = res
+        $('#table').empty()
+        if(searchResult.length != 0) {
+          lastFourDigitTel = searchResult[0].tel.substr(6)
+          // console.log(lastFourDigitTel)
+          confirmAccountSwal()
+        } else {
+          html += '<b>ไม่พบข้อมูล</b>'
+          $("#table").append(html)  
+        }
+      }).searchSheet(searchText)
+    }
+  }
+
+</script>
